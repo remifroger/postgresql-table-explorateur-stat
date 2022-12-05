@@ -1,0 +1,8 @@
+[
+    { "col": "nbmutations", "expr": "count(*)", "desc": ""},
+    { "col": "valeurfonc", "expr": "sum(CAST(NULLIF(valeurfonc, '') as numeric))", "desc": ""},
+    { "col": "prixm2", "expr": ["avg(CAST(NULLIF(valeurfonc, '') as numeric))", "/", "avg(CAST(NULLIF(sbati, '') as numeric))"], "desc": ""},
+    { "col": "prixmoyen", "expr": "avg(CAST(NULLIF(valeurfonc, '') as numeric))", "desc": ""},
+    { "col": "prixmedian", "expr": "percentile_disc(0.5) within group (order by CAST(NULLIF(sterr, '') as numeric))", "desc": ""},
+    { "col": "sbati", "expr": "sum(CAST(NULLIF(sbati, '') as numeric))", "desc": ""}
+]

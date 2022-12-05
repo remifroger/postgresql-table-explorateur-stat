@@ -1,0 +1,5 @@
+[
+    { "col": "libnatmut", "desc": "libnatmut", "alias": "libnatmut" },
+    { "col": "codtypbien", "desc": "libtypbien", "alias": "libtypbien" },
+    { "col": "left(codtypbien, 2)", "desc": "libtypbien", "alias": "libtypbien_2" }
+]

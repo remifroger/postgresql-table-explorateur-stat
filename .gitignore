@@ -1,3 +1,4 @@
 dv3f_d75*
 .env
 *.xlsx
+__pycache__

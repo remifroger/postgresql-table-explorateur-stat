@@ -44,26 +44,26 @@ output = args.fichier_sortie
 
 # Liste des mesures
 # La propriété expr peut être de type array pour générer une opération particulière (division, addition, etc.), et doit être énuméré dans l'ordre (exemple : ["avg(CAST(NULLIF(valeurfonc, '') as numeric))", "/", "avg(CAST(NULLIF(sbati, '') as numeric))"])
-mesuresColJson = open('mesuresColumns.json')
+mesuresColJson = open('config/mesuresColumns.json')
 mesuresColumns = json.load(mesuresColJson)
 
 
 # Liste des variables qualitatives
-qualitativeColJson = open('qualitativeColumns.json')
+qualitativeColJson = open('config/qualitativeColumns.json')
 qualitativeColumns = json.load(qualitativeColJson)
 
 # Liste des variables qualitatives pour croiser (qualitativeColumns x crossColumns)
-crossColJson = open('crossColumns.json')
+crossColJson = open('config/crossColumns.json')
 crossColumns = json.load(crossColJson)
 
 # Where : conditions s'appliquant au niveau global (et pas au niveau ligne)
-whereGlobalJson = open('globalWhere.json')
+whereGlobalJson = open('config/globalWhere.json')
 whereGlobal = json.load(whereGlobalJson)
 
 whereText = ''
 for i, where in enumerate(whereGlobal):
     if len(whereGlobal) > 1:
-        print('globalWhere.json ne peut contenir qu''un objet')
+        print('config/globalWhere.json ne peut contenir qu''un objet')
         exit()
     else:
         whereText += where["expr"]

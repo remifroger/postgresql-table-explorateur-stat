@@ -1,0 +1,3 @@
+[
+    { "expr": "filtre = '0' AND sbati::int > 0" }
+]

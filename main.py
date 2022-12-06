@@ -5,7 +5,11 @@
 """
 Présentation et logique du programme
 ------------------------------------
-
+Générer un fichier Excel de croisements statistiques à partir de mesuresColumns, qualitativeColumns et crossColumns
+mesuresColumns : les mesures - variables quantitatives - pouvant être une expression SQL
+qualitativeColumns : les axes d'analyses sur lesquels les mesures seront calculées
+crossColumns : croisement supplémentaire (qualitativeColumns x crossColumns)
+whereGlobal : conditions s'appliquant au niveau global 
 """
 
 import os
@@ -15,8 +19,8 @@ from sqlalchemy import create_engine
 import numpy as np
 from ast import literal_eval
 import argparse
-import collections.abc
 import json
+import utils
 load_dotenv()
 
 PGBINPATH = os.getenv('PGBINPATH')
@@ -26,15 +30,17 @@ PGUSER = os.getenv('PGPRODUSER')
 PGPORT = os.getenv('PGPRODPORT')
 PGPASSWORD = os.getenv('PGPRODPASSWORD')
 
-parser = argparse.ArgumentParser(description='Exploration statistique d''une table PostgreSQL')
-parser.add_argument("-s", "--schema", required=True, help="Nom du schéma source")
-parser.add_argument("-t", "--table", required=True, help="Nom de la table source")
-parser.add_argument("-c", "--croisement", required=True, help="Type de croisement, par mesure ou par axe d'analyse (valeurs possibles : 'mesure' ou 'axe')")
+parser = argparse.ArgumentParser(description = 'Exploration statistique d''une table PostgreSQL')
+parser.add_argument("-s", "--schema", required = True, help = "Nom du schéma source")
+parser.add_argument("-t", "--table", required = True, help = "Nom de la table source")
+parser.add_argument("-c", "--croisement", required = True, help = "Type de croisement, par mesure ou par axe d'analyse (valeurs possibles : 'mesure' ou 'axe')")
+parser.add_argument("-o", "--fichier_sortie", required = True, help = "Nom du fichier de sortie, automatiquement suffixé par le nom de la table et l'extension (XLSX)")
 args = parser.parse_args()
 
 CROISEMENT = args.croisement
 schemaName = args.schema
 tableName = args.table
+output = args.fichier_sortie
 
 # Liste des mesures
 # La propriété expr peut être de type array pour générer une opération particulière (division, addition, etc.), et doit être énuméré dans l'ordre (exemple : ["avg(CAST(NULLIF(valeurfonc, '') as numeric))", "/", "avg(CAST(NULLIF(sbati, '') as numeric))"])
@@ -50,13 +56,17 @@ qualitativeColumns = json.load(qualitativeColJson)
 crossColJson = open('crossColumns.json')
 crossColumns = json.load(crossColJson)
 
-# Fonction de sauvegarde d'une liste de DataFrame dans un Excel avec écriture dans la même feuille Excel si le nom de feuille est identique
-def save_excel_sheet(df, filepath, sheetname, startrow, index=False):
-    if not os.path.exists(filepath):
-        df.to_excel(filepath, sheet_name=sheetname, index=False)
+# Where : conditions s'appliquant au niveau global (et pas au niveau ligne)
+whereGlobalJson = open('globalWhere.json')
+whereGlobal = json.load(whereGlobalJson)
+
+whereText = ''
+for i, where in enumerate(whereGlobal):
+    if len(whereGlobal) > 1:
+        print('globalWhere.json ne peut contenir qu''un objet')
+        exit()
     else:
-        with pd.ExcelWriter(filepath, engine = 'openpyxl', if_sheet_exists = 'overlay', mode= 'a') as writer:
-            df.to_excel(writer, sheet_name = sheetname, startrow = startrow, index = False)
+        whereText += where["expr"]
 
 engine = create_engine('postgresql+psycopg2://{0}:{1}\@{3}:{4}/{2}'.format(PGUSER, PGPASSWORD, PGDB, PGHOST, PGPORT))
 print(engine)
@@ -98,26 +108,26 @@ if CROISEMENT == 'axe':
                                 dataResult[q['col'] + str(c) + str(dist)[:15]] = pd.read_sql("WITH sum AS (SELECT {5}, '{6}' as variable, {0} FROM {3}.{1} WHERE {2}::text = '{6}'::text GROUP BY {5}) SELECT * FROM sum UNION SELECT '_Totaux', '' as variable, {4} FROM sum ORDER BY {5} DESC".format(textMesures, tableName, q['col'], schemaName, textMesuresTot, cross['col'], dist.replace("'", "''")), engine)
                 
         if len(dataResult) > 0:
-            with pd.ExcelWriter('{0}_stat_resume_cross.xlsx'.format(tableName)) as writer:
+            with pd.ExcelWriter('{1}_{0}.xlsx'.format(tableName, output)) as writer:
                 for i, g in  enumerate(dataResult):
                     dataResult[g].to_excel(writer, sheet_name=g, index=False)
 
     else:
         for i, q in enumerate(qualitativeColumns):
-            dataResult[q['col']] = pd.read_sql("WITH sum AS (SELECT {2}, {0} FROM {3}.{1} GROUP BY {2}) SELECT * FROM sum UNION SELECT '_Totaux', {4} FROM sum ORDER BY {2} DESC".format(textMesures, tableName, q['col'], schemaName, textMesuresTot), engine)
+            dataResult[q['col']] = pd.read_sql("WITH sum AS (SELECT {2}, {0} FROM {3}.{1} WHERE {5} GROUP BY {2}) SELECT * FROM sum UNION SELECT '_Totaux', {4} FROM sum ORDER BY {2} DESC".format(textMesures, tableName, q['col'], schemaName, textMesuresTot, whereText), engine)
 
         for i, q in enumerate(qualitativeColumns):
-            query = pd.read_sql("WITH sum AS (SELECT {2}, {0} FROM {3}.{1} GROUP BY {2}) SELECT '{2}' as variable, {4} FROM sum".format(textMesures, tableName, q['col'], schemaName, textMesuresTot), engine)
+            query = pd.read_sql("WITH sum AS (SELECT {2}, {0} FROM {3}.{1} WHERE {5} GROUP BY {2}) SELECT '{2}' as variable, {4} FROM sum".format(textMesures, tableName, q['col'], schemaName, textMesuresTot, whereText), engine)
             dataResultTot[q['col']] = query
             listTot.append(pd.DataFrame(query))
 
         if len(dataResult) > 0:
-            with pd.ExcelWriter('{0}_stat_resume.xlsx'.format(tableName)) as writer:
+            with pd.ExcelWriter('{1}_{0}.xlsx'.format(tableName, output)) as writer:
                 for i, g in  enumerate(dataResult):
                     dataResult[g].to_excel(writer, sheet_name=g, index=False)
 
         if len(listTot) > 0:
-            with pd.ExcelWriter('{0}_stat_resume_tot.xlsx'.format(tableName)) as writer:
+            with pd.ExcelWriter('{1}_{0}.xlsx'.format(tableName, output)) as writer:
                 row = 0
                 for dataframe in listTot:
                     dataframe.to_excel(writer, sheet_name='Résumé totaux', startrow=row, startcol=0)   
@@ -177,12 +187,12 @@ elif CROISEMENT == 'par_annee_par_insee':
                     textMesuresTotSpec += "sum({0}_{1}::numeric) as {0}_{1}".format(mes['col'], insee, insee_column) 
             # Ajout dans le dictionnaire dataResult[q['alias']] du résultat de la requête dans le nom de la mesure (mes['col'])
             dataResult[q['alias']][mes['col']] = []
-            dataResult[q['alias']][mes['col']].append(pd.read_sql("WITH sum AS (SELECT {5}, {2}, max({6}) as {6}, {0} FROM {3}.{1} WHERE filtre = '0' AND sbati::int > 0 GROUP BY {5}, {2}) SELECT * FROM sum ORDER BY {5} ASC".format(textMesuresSpec, tableName, q['col'], schemaName, textMesuresTotSpec, annee_column, q['desc']), engine))
+            dataResult[q['alias']][mes['col']].append(pd.read_sql("WITH sum AS (SELECT {5}, {2}, max({6}) as {6}, {0} FROM {3}.{1} WHERE {7} GROUP BY {5}, {2}) SELECT * FROM sum ORDER BY {5} ASC".format(textMesuresSpec, tableName, q['col'], schemaName, textMesuresTotSpec, annee_column, q['desc'], whereText), engine))
 
     # Si dataResult n'est pas vide
     if len(dataResult) > 0:
         # Chemin de sauvegarde du Excel
-        path = '{0}_stat_resume_test.xlsx'.format(tableName)
+        path = '{1}_{0}.xlsx'.format(tableName, output)
         if os.path.exists(path):
             os.remove(path)
         # Pour chaque variable qualitative de dataResult
@@ -198,4 +208,4 @@ elif CROISEMENT == 'par_annee_par_insee':
                     startrow = startrow + dataDf.shape[0] + 2
                 # On sauvegarde en incrémentant startrow
                 # Un fichier Excel, dont chaque feuille = une variable qualitative, et chaque tableau d'une feuille = une mesure
-                save_excel_sheet(dataDf, path, g, startrow)
+                utils.save_excel_sheet(dataDf, path, g, startrow)

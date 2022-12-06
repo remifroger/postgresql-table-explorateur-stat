@@ -1,6 +1,6 @@
 # Résumé statistique d'une table PostgreSQL
 
-Génère un fichier Excel de croisements statistiques à partir de mesuresColumns, qualitativeColumns et crossColumns
+Génère un fichier Excel de croisements statistiques à partir de mesuresColumns, qualitativeColumns, crossColumns et whereGlobal
 
 ## Configuration
 

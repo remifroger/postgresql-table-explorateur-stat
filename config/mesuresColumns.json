@@ -3,5 +3,14 @@
     { "col": "valeurfonc", "expr": "sum(CAST(NULLIF(valeurfonc, '') as numeric))", "desc": ""},
     { "col": "prixm2", "expr": ["avg(CAST(NULLIF(valeurfonc, '') as numeric))", "/", "avg(CAST(NULLIF(sbati, '') as numeric))"], "desc": ""},
     { "col": "prixmoyen", "expr": "avg(CAST(NULLIF(valeurfonc, '') as numeric))", "desc": ""},
-    { "col": "sbati", "expr": "sum(CAST(NULLIF(sbati, '') as numeric))", "desc": ""}
+    { "col": "sbati", "expr": "sum(CAST(NULLIF(sbati, '') as numeric))", "desc": ""},
+    { "col": "sbatmai", "expr": "sum(CAST(NULLIF(sbatmai, '') as numeric))", "desc": ""},
+    { "col": "sbatapt", "expr": "sum(CAST(NULLIF(sbatapt, '') as numeric))", "desc": ""},
+    { "col": "sbatact", "expr": "sum(CAST(NULLIF(sbatact, '') as numeric))", "desc": ""},
+    { "col": "nbvolmut", "expr": "sum(CAST(NULLIF(nbvolmut, '') as numeric))", "desc": ""},
+    { "col": "nblocmut", "expr": "sum(CAST(NULLIF(nblocmut, '') as numeric))", "desc": ""},
+    { "col": "nblocmai", "expr": "sum(CAST(NULLIF(nblocmai, '') as numeric))", "desc": ""},
+    { "col": "nblocapt", "expr": "sum(CAST(NULLIF(nblocapt, '') as numeric))", "desc": ""},
+    { "col": "nblocdep", "expr": "sum(CAST(NULLIF(nblocdep, '') as numeric))", "desc": ""},
+    { "col": "nblocact", "expr": "sum(CAST(NULLIF(nblocact, '') as numeric))", "desc": ""}
 ]

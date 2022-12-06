@@ -187,7 +187,7 @@ elif CROISEMENT == 'par_annee_par_insee':
                     textMesuresTotSpec += "sum({0}_{1}::numeric) as {0}_{1}".format(mes['col'], insee, insee_column) 
             # Ajout dans le dictionnaire dataResult[q['alias']] du résultat de la requête dans le nom de la mesure (mes['col'])
             dataResult[q['alias']][mes['col']] = []
-            dataResult[q['alias']][mes['col']].append(pd.read_sql("WITH sum AS (SELECT {5}, {2}, max({6}) as {6}, {0} FROM {3}.{1} WHERE {7} GROUP BY {5}, {2}) SELECT * FROM sum ORDER BY {5} ASC".format(textMesuresSpec, tableName, q['col'], schemaName, textMesuresTotSpec, annee_column, q['desc'], whereText), engine))
+            dataResult[q['alias']][mes['col']].append(pd.read_sql("WITH sum AS (SELECT {5}, {2}, array_agg(distinct {6}) as {6}, {0} FROM {3}.{1} WHERE {7} GROUP BY {5}, {2}) SELECT * FROM sum ORDER BY {5} ASC".format(textMesuresSpec, tableName, q['col'], schemaName, textMesuresTotSpec, annee_column, q['desc'], whereText), engine))
 
     # Si dataResult n'est pas vide
     if len(dataResult) > 0:

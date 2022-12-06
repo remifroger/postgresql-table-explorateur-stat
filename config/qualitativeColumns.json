@@ -1,5 +1,7 @@
 [
     { "col": "libnatmut", "desc": "libnatmut", "alias": "libnatmut" },
-    { "col": "codtypbien", "desc": "libtypbien", "alias": "libtypbien" },
-    { "col": "left(codtypbien, 2)", "desc": "libtypbien", "alias": "libtypbien_2" }
+    { "col": "codtypbien", "desc": "libtypbien", "alias": "libtypbien_tout" },
+    { "col": "left(codtypbien, 1)", "desc": "libtypbien", "alias": "libtypbien_niv_1" },
+    { "col": "left(codtypbien, 2)", "desc": "libtypbien", "alias": "libtypbien_niv_2" },
+    { "col": "left(codtypbien, 3)", "desc": "libtypbien", "alias": "libtypbien_niv_3" }
 ]

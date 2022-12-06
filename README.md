@@ -27,7 +27,7 @@ options:
   -t TABLE, --table TABLE
                         Nom de la table source
   -c CROISEMENT, --croisement CROISEMENT
-                        Type de croisement, par mesure ou par axe d'analyse (valeurs possibles : 'mesure' ou 'axe')
+                        Type de croisement, par mesure ou par axe d'analyse (valeurs possibles : 'mesure' ou 'axe' ou 'par_annee_par_insee')
   -o FICHIER_SORTIE, --fichier_sortie FICHIER_SORTIE
                         Nom du fichier de sortie, automatiquement suffixé par le nom de la table et l'extension (XLSX)
 ```
